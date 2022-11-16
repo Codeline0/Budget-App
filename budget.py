@@ -39,7 +39,7 @@ class Category:
         if amount <= self.balance:
             category.ledger.append({'amount': amount, 'description': 'Transfer from {}'.format(self.category)})
             category.balance += amount
-            self.withdraw(amount, 'Transfer to {}'.format(category))
+            self.withdraw(amount, 'Transfer to {}'.format(category.category))
             return True
         return False
     
@@ -51,4 +51,38 @@ class Category:
 
 
 def create_spend_chart(categories):
-    pass
+    percentages = []
+    to_name = lambda x: x.category
+    for category in categories:
+        withdrawls = 0
+        for element in category.ledger:
+            amount = element['amount']
+            withdrawls += amount if amount < 0 else 0    
+        percentages.append(withdrawls)
+
+    suma = sum(percentages)
+    percentages = list(map(lambda x: x/suma * 100, percentages))
+
+    chart = 'Percentage spent by category\n'
+    for n in range(100, -1, -10):
+        chart += str(n).rjust(3, ' ') + '|'
+        for percentage in percentages:
+            if percentage > n:
+                chart += ' o '
+            else:
+                chart += '   '
+        chart += ' \n'
+    chart += "    ----------\n"
+
+    footer = ''  
+    for n in range(len(max(list(map(to_name,categories)), key=len))):
+        # print(n)
+        footer += '    ' 
+        for category in categories:
+            if n >= len(category.category):
+                footer += '   '
+            else:
+                footer += ' {} '.format(category.category[n])
+        footer += ' \n'
+                
+    return chart + footer[:-1]
